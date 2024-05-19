@@ -9,7 +9,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { catchError } from 'rxjs';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ProductMessages } from 'src/common/enums/messages-tcp.enum';
 import { ProductsService } from 'src/common/enums/services.enum';
@@ -29,7 +30,11 @@ export class ProductsController {
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.productsClient.send(ProductMessages.FindOne, { id });
+    return this.productsClient.send(ProductMessages.FindOne, { id }).pipe(
+      catchError((error) => {
+        throw new RpcException(error);
+      }),
+    );
   }
 
   @Patch(':id')
