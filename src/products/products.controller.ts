@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -14,13 +15,21 @@ import { catchError } from 'rxjs';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ProductMessages } from 'src/common/enums/messages-tcp.enum';
 import { ProductsService } from 'src/common/enums/services.enum';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('products')
 export class ProductsController {
   constructor(@Inject(ProductsService) private productsClient: ClientProxy) {}
   @Post()
-  create() {
-    return 'create a product';
+  create(@Body() createProductDto: CreateProductDto) {
+    return this.productsClient
+      .send(ProductMessages.Create, createProductDto)
+      .pipe(
+        catchError((error) => {
+          throw new RpcException(error);
+        }),
+      );
   }
 
   @Get()
@@ -38,12 +47,28 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number) {
-    return 'update a product by id' + id;
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    return this.productsClient
+      .send(ProductMessages.Update, {
+        id,
+        updateProductDto,
+      })
+      .pipe(
+        catchError((error) => {
+          throw new RpcException(error);
+        }),
+      );
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
-    return 'delete a product by id' + id;
+    return this.productsClient.send(ProductMessages.Delete, { id }).pipe(
+      catchError((error) => {
+        throw new RpcException(error);
+      }),
+    );
   }
 }
