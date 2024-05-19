@@ -7,9 +7,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { ProductsService } from 'src/common/services.enum';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { ProductMessages } from 'src/common/enums/messages-tcp.enum';
+import { ProductsService } from 'src/common/enums/services.enum';
 
 @Controller('products')
 export class ProductsController {
@@ -20,13 +23,13 @@ export class ProductsController {
   }
 
   @Get()
-  findAll() {
-    return this.productsClient.send('FIND_ALL_PRODUCTS', {});
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.productsClient.send(ProductMessages.FindAll, paginationDto);
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return 'get one product by id' + id;
+    return this.productsClient.send(ProductMessages.FindOne, { id });
   }
 
   @Patch(':id')
