@@ -1,18 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Inject,
-} from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import { ClientProxy, MessagePattern } from '@nestjs/microservices';
-import { OrdersService } from 'src/common/enums/services.enum';
+import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { catchError } from 'rxjs';
 import { OrdersMessages } from 'src/common/enums/messages-tcp.enum';
+import { OrdersService } from 'src/common/enums/services.enum';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -21,7 +12,11 @@ export class OrdersController {
   ) {}
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+    return this.ordersClient.send(OrdersMessages.Create, createOrderDto).pipe(
+      catchError((error) => {
+        throw new RpcException(error);
+      }),
+    );
   }
 
   @Get()
@@ -32,15 +27,5 @@ export class OrdersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.ordersClient.send(OrdersMessages.FindOne, { id });
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return 'This action updates a #' + id + ' order';
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return 'This action removes a #' + id + ' order';
   }
 }
