@@ -12,3 +12,9 @@ export const enum OrdersMessages {
   FindOne = 'FIND_ONE_ORDER',
   ChangeStatus = 'CHANGE_ORDER_STATUS',
 }
+
+export const enum AuthMessages {
+  Register = 'REGISTER_USER',
+  Login = 'LOGIN_USER',
+  Verify = 'VERIFY_TOKEN',
+}
